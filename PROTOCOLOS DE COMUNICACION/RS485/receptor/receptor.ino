@@ -7,6 +7,10 @@
  
 // Create a SoftwareSerial object to communicate with the MAX485
 SoftwareSerial RS485Serial(6, 7); // RX, TX
+
+// Nivel del tanque de agua
+float nivel;
+float voltajeSalida;
  
 void setup() {
   // Initialize the serial communication
@@ -24,15 +28,24 @@ void setup() {
 }
  
 void loop() {
-  if (RS485Serial.available()) {
-    // Read the received data
-    int receivedData = RS485Serial.read();
+  if (RS485Serial.available() >= sizeof(float)) {
+    
+    float frecuenciaPromedio = 0;
+    RS485Serial.readBytes((byte*)&frecuenciaPromedio, sizeof(float));
  
     // Print the received data to the serial monitor
-    Serial.print("Data received: ");
-    Serial.println(receivedData);
- 
-    // Print a successful message
-    Serial.println("Data successfully received.");
+    // Serial.print("Frecuencia del oscilador: ");
+    Serial.println(frecuenciaPromedio);
+
+    // Convertir la frecuencia a nivel - voltaje
+    nivel = 8*(frecuenciaPromedio - 38655.275)/(14.706818);
+    Serial.print("El nivel es: ");
+    Serial.println(nivel);
+
+    // Salida en voltaje a nivel industrial
+    voltajeSalida = 5*nivel/8;
+    Serial.print("El voltaje industrial:");
+    Serial.println(voltajeSalida);
+
   }
 }
